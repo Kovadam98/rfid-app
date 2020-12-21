@@ -1,0 +1,61 @@
+version: '3'
+services:
+  database:
+    image: rfidapp/rfid-app-database:latest
+    networks:
+      - backend
+    ports:
+      - 5432:5432
+
+  service-order:
+    image: rfidapp/rfid-app-service-order:latest
+    networks:
+      - backend
+      - order
+    depends_on:
+      - database
+
+  service-production:
+    image: rfidapp/rfid-app-service-production:latest
+    networks:
+      - backend
+      - production
+    depends_on:
+      - database
+    ports:
+    - 8080:8080
+
+  service-resource:
+    image: rfidapp/rfid-app-service-resource:latest
+    networks:
+      - resource
+
+  web-order:
+    image: rfidapp/rfid-app-web-order:latest
+    networks:
+      - order
+      - resource
+    ports:
+      - 80:3000
+    depends_on:
+      - service-order
+      - service-resource
+    stdin_open: true
+
+  web-production:
+    image: rfidapp/rfid-app-web-production:latest
+    networks:
+      - production
+      - resource
+    ports:
+      - 3000:3000
+    depends_on:
+      - service-production
+      - service-resource
+    stdin_open: true
+
+networks:
+  backend:
+  resource:
+  order:
+  production:

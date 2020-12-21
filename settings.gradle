@@ -1,0 +1,8 @@
+rootProject.name = 'rfid-app'
+include 'rfid-app-database'
+include 'rfid-app-service-common'
+include 'rfid-app-service-order'
+include 'rfid-app-service-production'
+include 'rfid-app-service-resource'
+include 'rfid-app-web-order'
+include 'rfid-app-web-production'
