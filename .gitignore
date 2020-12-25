@@ -5,7 +5,7 @@ gradlew
 gradlew.bat
 */build/
 */node_modules/
-.bootinfo
-.bootinfo_guids
-.compileinfo
-.opt
+*.bootinfo
+*.bootinfo_guids
+*.compileinfo
+*.opt
