@@ -1,0 +1,11 @@
+.gradle
+gradle/
+.idea
+gradlew
+gradlew.bat
+*/build/
+*/node_modules/
+.bootinfo
+.bootinfo_guids
+.compileinfo
+.opt
