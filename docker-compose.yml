@@ -24,11 +24,13 @@ services:
       - database
     ports:
     - 8080:8080
+    restart: on-failure
 
   service-resource:
     image: rfidapp/rfid-app-service-resource:latest
     networks:
       - resource
+    restart: on-failure
 
   web-order:
     image: rfidapp/rfid-app-web-order:latest
@@ -40,7 +42,6 @@ services:
     depends_on:
       - service-order
       - service-resource
-    stdin_open: true
 
   web-production:
     image: rfidapp/rfid-app-web-production:latest
@@ -52,7 +53,6 @@ services:
     depends_on:
       - service-production
       - service-resource
-    stdin_open: true
 
 networks:
   backend:
