@@ -1,3 +1,1 @@
 task build{}
-
-build.finalizedBy('docker')

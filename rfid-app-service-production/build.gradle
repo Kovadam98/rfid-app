@@ -16,5 +16,3 @@ dependencies {
 
     implementation project(':rfid-app-service-common')
 }
-
-build.finalizedBy('docker')

@@ -23,6 +23,4 @@ jar {
     enabled = true
 }
 
-docker{
-
-}
+dockerPush.enabled = false
