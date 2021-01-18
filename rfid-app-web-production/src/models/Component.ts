@@ -1,4 +1,4 @@
-export default interface Component{
+export interface Component{
     id: number;
     real: boolean;
     name: string;

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import Product from '../models/Product';
+import React, { useState } from 'react';
+import { Product } from '../models';
 import { getProduct } from '../services/service';
-import register from '../utils/serviceWorkerUtils';
 import { Frame } from './Frame';
 import InfoModal from './InfoModal';
 import { timeout} from '../utils/constants';
+import useWebSocket from "../services/webSocketService";
 
 export default function App() {
     const [product,setProduct] = useState<Product | null>(null);
@@ -75,7 +75,7 @@ export default function App() {
         loadAfter(1000).then();
         setIsOpen(false);
     }
-
+/*
     function handlePushNotification(event: any) {
         console.log(event.data);
         switch (event.data) {
@@ -90,16 +90,15 @@ export default function App() {
             default: error(event.data);
         }
     }
-
-    useEffect( () => {
-        async function init() {
-            await register(handlePushNotification);
-            await loadAfter(2000);
+*/
+    useWebSocket(
+        product => {
+            console.log(product);
+        },
+        result => {
+            console.log(result);
         }
-        init().then();
-        //eslint-disable-next-line react-hooks/exhaustive-deps
-    },[]);
-
+    )
     return (
         <>
             <div className={backgroundClass}>

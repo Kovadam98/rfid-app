@@ -1,6 +1,6 @@
-import Component from './Component';
+import { Component } from '../models';
 
-export default interface Product{
+export interface Product{
     id: number;
     name: string;
     components: Component[];

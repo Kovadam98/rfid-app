@@ -5,14 +5,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rfid.app.service.common.model.Component;
 import rfid.app.service.production.dto.ProductDto;
+import rfid.app.service.production.dto.Result;
+import rfid.app.service.production.dto.ResultType;
 import rfid.app.service.production.util.Converter;
 import rfid.app.service.common.exception.*;
 import rfid.app.service.common.model.Product;
 import rfid.app.service.common.repository.ComponentRepository;
 import rfid.app.service.common.repository.ProductRepository;
 import rfid.app.service.common.service.WebPushService;
+import rfid.app.service.production.util.Validator;
+import rfid.app.service.production.websocket.NotificationService;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,98 +25,78 @@ import java.util.stream.Collectors;
 @RestController
 public class ProductionController {
 
+    private static final Integer MAX_EXISTING_ID = 20;
+
     private final ProductRepository productRepository;
     private final ComponentRepository componentRepository;
-    private final WebPushService webPushService;
+    private final NotificationService notificationService;
+    private final Validator validator;
 
     public ProductionController(
             ProductRepository productRepository,
             ComponentRepository componentRepository,
-            WebPushService webPushService){
+            NotificationService notificationService,
+            Validator validator
+    ){
         this.productRepository = productRepository;
         this.componentRepository = componentRepository;
-        this.webPushService = webPushService;
+        this.notificationService = notificationService;
+        this.validator = validator;
     }
 
     @ExceptionHandler
     public ResponseEntity<String> handleException(Exception ex) {
-        webPushService.send(ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    @GetMapping(value = "production/next")
-    public ResponseEntity<ProductDto> getNext(){
+    public Product getCurrentProduct() {
         List<Product> products = productRepository.findHasNotRealComponent();
         if(products.size() <= 0){
-            throw new NoAvailableOrderException();
+            return null;
         }
-        Product product = products.get(0);
+        return products.get(0);
+    }
+
+    public ProductDto getNext(){
+        Product product = getCurrentProduct();
         //number of real components and +1 next component
         long nextInAssembly = product.getComponents().stream().filter(Component::isReal).count() + 1;
         Set<Component> visibleComponents = product.getComponents().stream()
                 .filter(component -> component.getType().getAssemblyOrder() <= nextInAssembly)
                 .collect(Collectors.toSet());
         product.setComponents(visibleComponents);
-        return new ResponseEntity<>(Converter.createProductDto(product), HttpStatus.OK);
+        return Converter.createProductDto(product);
+    }
+
+    private Set<Integer> sanitizeIds(Set<Integer> ids) {
+        return ids.stream()
+                .filter(id -> id < MAX_EXISTING_ID)
+                .collect(Collectors.toSet());
     }
 
     @Transactional
     @PostMapping(value = "/production/ids")
     public void postIds(@RequestBody Set<Integer> detectedIds){
-        Product product = getProductByDetectedIds(detectedIds);
-        Component nextRealComponent = getNextRealComponentByDetectedIds(detectedIds);
-        Component nextVirtualComponent = getNextComponent(product);
-        Set<Integer> detectedAttachedIds = getDetectedAttachedIds(detectedIds,nextRealComponent.getId());
-        Set<Integer> registeredAttachedIds = getRegisteredAttachedIds(product.getComponents());
+        Set<Integer> ids = sanitizeIds(detectedIds);
 
-        validateNoComponentMissing(detectedAttachedIds, registeredAttachedIds);
-        validateSubstitutability(nextRealComponent, nextVirtualComponent);
+        Collection<Component> components = componentRepository.getRealComponentsFromIds(ids);
+        Product product = getCurrentProduct();
 
-        nextRealComponent.setProduct(product);
-        product.getComponents().remove(nextVirtualComponent);
-        product.getComponents().add(nextRealComponent);
-        componentRepository.save(nextRealComponent);
-        componentRepository.delete(nextVirtualComponent);
+        Result result = validator.Validate(components,product);
 
-        if(isFinished(product)) {
-            webPushService.send("finished");
+        if(result.getType() != ResultType.ERROR) {
+            Component nextRealComponent = getNextRealComponentByDetectedIds(detectedIds);
+            Component nextVirtualComponent = getNextComponent(product);
+
+            nextRealComponent.setProduct(product);
+            product.getComponents().remove(nextVirtualComponent);
+            product.getComponents().add(nextRealComponent);
+            componentRepository.save(nextRealComponent);
+            componentRepository.delete(nextVirtualComponent);
+
+            notificationService.notifyNewComponents(getNext());
         }
-        else {
-            webPushService.send("success");
-        }
-    }
-
-    private void validateNoComponentMissing(Set<Integer> detectedAttachedIds, Set<Integer> registeredAttachedIds){
-        boolean noComponentMissing = detectedAttachedIds.containsAll(registeredAttachedIds);
-        if(!noComponentMissing){
-            throw new ComponentMissingException();
-        }
-    }
-
-    private Set<Integer> getRegisteredAttachedIds(Set<Component> components){
-        return components.stream()
-                .filter(Component::isReal)
-                .map(Component::getId)
-                .collect(Collectors.toSet());
-    }
-
-    private Set<Integer> getDetectedAttachedIds(Set<Integer> ids, Integer filterId){
-        return ids.stream().filter(id -> !id.equals(filterId)).collect(Collectors.toSet());
-    }
-
-    private Product getProductByDetectedIds(Set<Integer> ids){
-        List<Product> products = productRepository.findProductByComponentIds(ids);
-        if(products.size() < 1){
-            List<Product> newProducts = productRepository.findHasNotRealComponent();
-            if(newProducts.size() <= 0){
-                throw new NoAvailableOrderException();
-            }
-            else return newProducts.get(0);
-        }
-        else if(products.size() > 1){
-            throw new MoreThanOneProductFoundException();
-        }
-        return products.get(0);
+        notificationService.notifyMessage(result);
     }
 
     private Component getNextRealComponentByDetectedIds(Set<Integer> ids){
@@ -130,15 +115,5 @@ public class ProductionController {
         return product.getComponents().stream()
                 .filter(component -> component.getType().getAssemblyOrder() == nextInAssembly)
                 .findFirst().orElseThrow(RuntimeException::new);
-    }
-
-    private void validateSubstitutability(Component nextRealComponent, Component nextVirtualComponent){
-        boolean typesNotEqual = nextRealComponent.getType().getId() != nextVirtualComponent.getType().getId();
-        boolean colorNotEqual = nextRealComponent.getColorType().getId() != nextVirtualComponent.getColorType().getId();
-        if(typesNotEqual || colorNotEqual) throw new NewComponentNotAppropriateException();
-    }
-
-    private boolean isFinished(Product product){
-        return product.getComponents().stream().allMatch(Component::isReal);
     }
 }
