@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Product from '../models/Product';
-import { getProduct } from '../services/service';
-import register from '../utils/serviceWorkerUtils';
-import { Frame } from './Frame';
+import Result from '../models/Result';
+import Frame from './Frame';
 import InfoModal from './InfoModal';
 import { timeout} from '../utils/constants';
+import useWebSocket from "../services/webSocketService";
 
 export default function App() {
     const [product,setProduct] = useState<Product | null>(null);
@@ -12,7 +12,7 @@ export default function App() {
     const [freezeVirtual, setFreezeVirtual] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isError, setIsError] = useState(false);
-    const [message, setMessage] = useState('');
+    const [messages, setMessages] = useState<string[]>([]);
 
     function showModal(ms: number){
         setIsOpen(true);
@@ -28,78 +28,44 @@ export default function App() {
         },ms);
     }
 
-    function freezeVirtualComponent(ms: number) {
-        setFreezeVirtual(true);
-        setTimeout(() => {
-            setFreezeVirtual(false);
-        },ms);
-    }
-
-    async function loadAfter(ms: number = 0){
-        setTimeout(async () => {
-            const data = await getProduct();
-            setProduct(data);
-        },ms);
-    }
-
-    async function success() {
+    function handleSuccess() {
         blink('green','fast', timeout.success);
-        freezeVirtualComponent(timeout.success);
-        await loadAfter(timeout.success);
     }
 
-    async function finished() {
+    function handleFinished() {
         blink('green','slow', timeout.finished);
-        freezeVirtualComponent(timeout.finished);
-        setMessage('Successful assembly.')
+        setMessages(['Successful assembly.'])
         setIsError(false);
         showModal(timeout.finished);
-        await loadAfter(timeout.finished);
     }
 
-    function error(message: string) {
+    function handleError(messages: string[]) {
         blink('red','fast', timeout.error);
-        setMessage(message);
+        setMessages(messages);
         setIsError(true);
         showModal(timeout.error);
     }
-    function noOrder(message: string) {
-        setTimeout(() => {
-            setMessage(message);
-            setIsError(true);
-            setIsOpen(true)
-        },timeout.finished);
+
+    function handleProductMessage(product: Product) {
+        setFreezeVirtual(true);
+        setTimeout(() =>{
+            setFreezeVirtual(false);
+            setProduct(product);
+        },1000)
     }
 
-    function onNew() {
-        loadAfter(1000).then();
-        setIsOpen(false);
-    }
-
-    function handlePushNotification(event: any) {
-        console.log(event.data);
-        switch (event.data) {
-            case 'success': success().then();
+    function handleResultMessage(result: Result) {
+        switch(result.type) {
+            case 'SUCCESS': handleSuccess();
                 break;
-            case 'finished': finished().then();
+            case 'FINISHED': handleFinished();
                 break;
-            case 'new': onNew();
+            case 'ERROR': handleError(result.messages);
                 break;
-            case 'No available order.': noOrder(event.data);
-                break;
-            default: error(event.data);
         }
     }
 
-    useEffect( () => {
-        async function init() {
-            await register(handlePushNotification);
-            await loadAfter(2000);
-        }
-        init().then();
-        //eslint-disable-next-line react-hooks/exhaustive-deps
-    },[]);
-
+    useWebSocket(handleProductMessage,handleResultMessage)
     return (
         <>
             <div className={backgroundClass}>
@@ -107,7 +73,7 @@ export default function App() {
                     <Frame freezeVirtual={freezeVirtual} component={component} key={index}/>
                 )}
             </div>
-            <InfoModal isOpen={isOpen} isError={isError} message={message} />
+            <InfoModal isOpen={isOpen} isError={isError} messages={messages} />
         </>
     );
 }

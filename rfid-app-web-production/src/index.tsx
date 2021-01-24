@@ -6,10 +6,6 @@ import Modal from 'react-modal';
 
 Modal.setAppElement("#root");
 
-navigator.serviceWorker.getRegistrations().then(regs =>
-    regs.forEach( reg => reg.unregister())
-);
-
 ReactDOM.render(
     <React.StrictMode>
         <App/>

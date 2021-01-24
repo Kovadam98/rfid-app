@@ -5,14 +5,16 @@ import '../styles/styles.css';
 export interface InfoModalProps{
     isOpen: boolean,
     isError: boolean,
-    message: string
+    messages: string[]
 }
 
-export default function InfoModal({isOpen, isError, message}: InfoModalProps){
+export default function InfoModal({isOpen, isError, messages}: InfoModalProps){
     const cls = isError ? 'red' : 'green';
     return (
         <Modal isOpen={isOpen} className={'InfoModal ' + cls}>
-            <b>{message}</b>
+            {messages.map((message,index) =>
+                <p key={index}>{message}</p>
+            )}
         </Modal>
     )
 }
