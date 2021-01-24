@@ -12,5 +12,4 @@ subprojects{
         workingDir "."
         commandLine "docker", "buildx", "build", "--push", "--platform", "${platforms}", "--tag", "${dockerImage}", "."
     }
-    dockerPush.dependsOn('build')
 }

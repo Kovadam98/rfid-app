@@ -19,5 +19,6 @@ export default function useWebSocket(
         stompClient2.connect({}, ()=>{
             stompClient2.subscribe('/notif/items', msg => itemsCallback(JSON.parse(msg.body)));
         })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[]);
 }
