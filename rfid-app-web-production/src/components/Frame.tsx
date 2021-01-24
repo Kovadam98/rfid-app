@@ -8,7 +8,7 @@ export interface FrameProps{
     freezeVirtual: boolean;
 }
 
-export function Frame({ component, freezeVirtual }: FrameProps){
+export default function Frame({ component, freezeVirtual }: FrameProps){
     return (
         <img
             src={component.url}
