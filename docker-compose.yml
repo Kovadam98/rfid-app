@@ -7,55 +7,34 @@ services:
     ports:
       - 5432:5432
 
-  service-order:
-    image: rfidapp/rfid-app-service-order:latest
+  rfid-backend:
+    image: rfidapp/rfid-app-backend:latest
     networks:
       - backend
-      - order
-    depends_on:
-      - database
-
-  service-production:
-    image: rfidapp/rfid-app-service-production:latest
-    networks:
-      - backend
-      - production
-    depends_on:
-      - database
+      - frontend
     ports:
-    - 8080:8080
-    restart: on-failure
-
-  service-resource:
-    image: rfidapp/rfid-app-service-resource:latest
-    networks:
-      - resource
-    restart: on-failure
+      - 8080:8080
+    depends_on:
+      - database
 
   web-order:
     image: rfidapp/rfid-app-web-order:latest
     networks:
-      - order
-      - resource
+      - frontend
     ports:
       - 80:80
     depends_on:
-      - service-order
-      - service-resource
+      - rfid-backend
 
   web-production:
     image: rfidapp/rfid-app-web-production:latest
     networks:
-      - production
-      - resource
+      - frontend
     ports:
       - 81:80
     depends_on:
-      - service-production
-      - service-resource
+      - rfid-backend
 
 networks:
   backend:
-  resource:
-  order:
-  production:
+  frontend:
