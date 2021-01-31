@@ -9,12 +9,12 @@ export default function useWebSocket(
     resultCallback: (result: Result) => void
 ) {
     useEffect(() => {
-        let socket1 = new SockJS('/api/rfid');
+        let socket1 = () => new SockJS('/api/rfid');
         let stompClient1 = Stomp.over(socket1);
         stompClient1.connect({}, ()=>{
-            stompClient1.subscribe('notif/result', msg => resultCallback(JSON.parse(msg.body)));
+            stompClient1.subscribe('/notif/result', msg => resultCallback(JSON.parse(msg.body)));
         })
-        let socket2 = new SockJS('/api/rfid');
+        let socket2 = () => new SockJS('/api/rfid');
         let stompClient2 = Stomp.over(socket2);
         stompClient2.connect({}, ()=>{
             stompClient2.subscribe('/notif/items', msg => itemsCallback(JSON.parse(msg.body)));

@@ -1,7 +1,7 @@
 import ProductType from '../models/order/ProductType';
 import PostOrder from '../models/order/PostOrder';
 
-const url = 'api/order';
+const url = '/api/order';
 
 export async function getProductTypes(){
     const response = await fetch(url);

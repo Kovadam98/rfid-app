@@ -11,7 +11,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketMessageConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/rfid")
+        registry.addEndpoint("/api/rfid")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
