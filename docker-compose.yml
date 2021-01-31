@@ -17,21 +17,12 @@ services:
     depends_on:
       - database
 
-  web-order:
-    image: rfidapp/rfid-app-web-order:latest
+  rfid-frontend:
+    image: rfidapp/rfid-app-frontend:latest
     networks:
       - frontend
     ports:
       - 80:80
-    depends_on:
-      - rfid-backend
-
-  web-production:
-    image: rfidapp/rfid-app-web-production:latest
-    networks:
-      - frontend
-    ports:
-      - 81:80
     depends_on:
       - rfid-backend
 
