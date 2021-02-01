@@ -1,10 +1,7 @@
 package rfid.app.backend.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rfid.app.backend.dto.ProductDto;
 import rfid.app.backend.exception.ComponentTypesNotMatchingException;
 import rfid.app.backend.model.*;
@@ -21,6 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("api")
 public class OrderController {
     private final ProductTypeRepository productTypeRepository;
     private final ProductRepository productRepository;

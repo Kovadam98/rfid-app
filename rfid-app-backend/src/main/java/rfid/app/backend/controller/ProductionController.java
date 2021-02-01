@@ -86,7 +86,7 @@ public class ProductionController {
 
 
     @Transactional
-    @PostMapping(value = "/production/ids")
+    @PostMapping(value = "/api/production/ids")
     public void postIds(@RequestBody Set<Integer> detectedIds){
         Set<Integer> ids = sanitizeIds(detectedIds);
         Collection<Component> components = componentRepository.getRealComponentsFromIds(ids);
