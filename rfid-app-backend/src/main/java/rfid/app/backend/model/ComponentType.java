@@ -10,6 +10,7 @@ import java.util.Set;
 @Table(name = "component_type")
 public class ComponentType {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Size(max = 50)

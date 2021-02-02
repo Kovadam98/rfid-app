@@ -1,4 +1,3 @@
 rootProject.name = 'rfid-app'
-include 'rfid-app-database'
 include 'rfid-app-backend'
 include 'rfid-app-frontend'
