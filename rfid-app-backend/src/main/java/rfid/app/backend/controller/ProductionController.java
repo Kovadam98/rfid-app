@@ -103,7 +103,8 @@ public class ProductionController {
     private void equipNextComponent(Product product) {
         Component nextVirtualComponent = getNextComponent(product);
         int typeId = nextVirtualComponent.getType().getId();
-        Component nextRealComponent = componentRepository.getNextComponentsByTypeId(typeId).get(0);
+        int colorId = nextVirtualComponent.getColorType().getId();
+        Component nextRealComponent = componentRepository.getNextComponentsByTypeId(typeId, colorId).get(0);
         nextRealComponent.setProduct(product);
         product.getComponents().remove(nextVirtualComponent);
         product.getComponents().add(nextRealComponent);

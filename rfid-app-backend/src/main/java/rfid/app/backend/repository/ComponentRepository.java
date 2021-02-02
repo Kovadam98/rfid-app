@@ -23,7 +23,8 @@ public interface ComponentRepository extends CrudRepository<Component,Integer> {
             "SELECT DISTINCT component FROM Component component " +
             "INNER JOIN FETCH component.type type " +
             "WHERE component.isReal = true " +
-            "AND component.type.id = :typeId"
+            "AND component.type.id = :typeId " +
+            "AND component.colorType.id = :colorId"
     )
-    List<Component> getNextComponentsByTypeId(@Param("typeId") Integer typeId);
+    List<Component> getNextComponentsByTypeId(@Param("typeId") Integer typeId, @Param("colorId") Integer colorId);
 }
