@@ -1,7 +1,0 @@
-spring.datasource:
-  url: jdbc:postgresql://database:5432/rfid
-  username: rfid
-  password: dev
-  driver-class-name: org.postgresql.Driver
-public-key: BN5JR-nxYxfsTJU-5jwXNbwEfK2Yja-rgjkg9_nJUQbCH_j7TrYhaEw2bvADbjlp5EaCVSAMbwI5DD70iMYUqvU
-private-key: GBpGGaczQAP7vRV3Dk4mUvCzuJIGYZEaaogwYhUvuBk

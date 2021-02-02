@@ -1,21 +1,11 @@
 version: '3'
 services:
-  database:
-    image: rfidapp/rfid-app-database:latest
-    networks:
-      - backend
-    ports:
-      - 5432:5432
-
   rfid-backend:
     image: rfidapp/rfid-app-backend:latest
     networks:
-      - backend
       - frontend
     ports:
       - 8080:8080
-    depends_on:
-      - database
 
   rfid-frontend:
     image: rfidapp/rfid-app-frontend:latest
@@ -27,5 +17,4 @@ services:
       - rfid-backend
 
 networks:
-  backend:
   frontend:
