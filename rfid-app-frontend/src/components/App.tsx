@@ -1,11 +1,11 @@
 import React from 'react';
-import {BrowserRouter, Redirect, Route, Switch} from 'react-router-dom';
+import { HashRouter, Redirect, Route, Switch} from 'react-router-dom';
 import OrderPage from "../pages/OrderPage";
 import ProductionPage from '../pages/ProductionPage';
 
 export default function App() {
   return (
-        <BrowserRouter>
+        <HashRouter basename='/'>
           <Switch>
               <Route path='/production'>
                   <ProductionPage />
@@ -15,6 +15,6 @@ export default function App() {
               </Route>
               <Redirect to='/order' />
           </Switch>
-        </BrowserRouter>
+        </HashRouter>
   );
 }
