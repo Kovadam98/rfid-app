@@ -1,3 +1,8 @@
-plugins {
-    id "com.palantir.npm-run" version "0.5.0"
+apply plugin: "com.moowork.node"
+apply plugin: "base"
+
+task appNpmBuild(type: NpmTask) {
+    args = ["run", "build"]
 }
+
+assemble.dependsOn(appNpmBuild)
