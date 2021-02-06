@@ -46,11 +46,6 @@ public class OrderController {
         validateComponents(orderDto.getComponents(), productType.getComponentTypes());
         Product product = createProduct(orderDto,productType);
         productRepository.save(product);
-        long nextInAssembly = product.getComponents().stream().filter(Component::isReal).count() + 1;
-        Set<Component> visibleComponents = product.getComponents().stream()
-                .filter(component -> component.getType().getAssemblyOrder() <= nextInAssembly)
-                .collect(Collectors.toSet());
-        product.setComponents(visibleComponents);
         ProductDto productDto = Converter.createProductDto(product);
         notificationService.notifyNewComponents(productDto);
         return ResponseEntity.ok("");

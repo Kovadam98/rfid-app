@@ -61,15 +61,6 @@ public class ProductionController {
 
     public ProductDto getNext(){
         Product product = getCurrentProduct();
-        if(product == null) {
-            return new ProductDto(0,"",new ArrayList<>());
-        }
-        //number of real components and +1 next component
-        long nextInAssembly = product.getComponents().stream().filter(Component::isReal).count() + 1;
-        Set<Component> visibleComponents = product.getComponents().stream()
-                .filter(component -> component.getType().getAssemblyOrder() <= nextInAssembly)
-                .collect(Collectors.toSet());
-        product.setComponents(visibleComponents);
         return Converter.createProductDto(product);
     }
 
