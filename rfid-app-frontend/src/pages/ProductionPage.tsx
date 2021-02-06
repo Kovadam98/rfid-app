@@ -6,6 +6,7 @@ import Result from "../models/production/Result";
 import InfoModal from "../components/InfoModal";
 import Frame from "../components/Production/Frame";
 import "../styles/styles.css";
+import ProgressBar from "../components/Production/ProgressBar";
 
 export default function ProductionPage() {
     const [product,setProduct] = useState<Product | null>(null);
@@ -65,10 +66,12 @@ export default function ProductionPage() {
                 break;
         }
     }
-
+    let total = product?.componentCount || 1;
+    let active = product?.components.length || 0;
     useWebSocket(handleProductMessage,handleResultMessage)
     return (
         <>
+            <ProgressBar total={total} active={active -1} />
             <div className={backgroundClass}>
                 {product?.components.map( (component,index) =>
                     <Frame freezeVirtual={freezeVirtual} component={component} key={index}/>
