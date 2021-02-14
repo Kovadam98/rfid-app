@@ -19,7 +19,6 @@ import rfid.app.backend.util.Validator;
 import rfid.app.backend.service.NotificationService;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +27,7 @@ import java.util.stream.Collectors;
 @RestController
 public class ProductionController {
     private static final Integer MAX_EXISTING_ID = 20;
+    private static final Integer SHUTDOWN_ID = 200;
 
     private final ProductRepository productRepository;
     private final ComponentRepository componentRepository;
@@ -79,6 +79,10 @@ public class ProductionController {
     @Transactional
     @PostMapping(value = "/api/production/ids")
     public void postIds(@RequestBody Set<Integer> detectedIds){
+        boolean isShutdown = detectShutdown(detectedIds);
+        if(isShutdown){
+            return;
+        }
         Set<Integer> ids = sanitizeIds(detectedIds);
         Collection<Component> components = componentRepository.getRealComponentsFromIds(ids);
         Product product = getCurrentProduct();
@@ -108,5 +112,18 @@ public class ProductionController {
         return product.getComponents().stream()
                 .filter(component -> component.getType().getAssemblyOrder() == nextInAssembly)
                 .findFirst().orElseThrow(RuntimeException::new);
+    }
+
+    private boolean detectShutdown(Set<Integer> ids) {
+        boolean isShutdown = ids.stream().anyMatch(id -> id.equals(SHUTDOWN_ID));
+        if(isShutdown) {
+            try {
+                Runtime.getRuntime().exec("./shutdown.sh");
+            }
+            catch (Exception exception) {
+                System.out.println(exception.getMessage());
+            }
+        }
+        return isShutdown;
     }
 }
