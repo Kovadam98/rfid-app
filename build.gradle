@@ -1,18 +1,3 @@
-subprojects{
-    group = 'rfid-app'
-    ext{
-        dockerUserName = 'rfidapp'
-    }
-    repositories {
-        mavenCentral()
-    }
-    def dockerImage = "${project.ext.dockerUserName}/${project.name}"
-    def platforms = "linux/arm/v7,linux/amd64"
-    task dockerPush(type: Exec) {
-        workingDir "."
-        commandLine "docker", "buildx", "build", "--push", "--platform", "${platforms}", "--tag", "${dockerImage}", "."
-    }
-}
 allprojects {
     repositories {
         mavenCentral()

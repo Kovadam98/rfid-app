@@ -1,3 +1,0 @@
-plugins {
-    id "com.palantir.npm-run" version "0.5.0"
-}
